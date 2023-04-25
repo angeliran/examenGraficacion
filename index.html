@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Examen</title>
+    <style>
+      .form {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="form">
+      <form>
+        <label for="numParts">Número de rebanadas:</label>
+        <input
+          type="number"
+          id="numParts"
+          name="numParts"
+          value="6"
+          min="1"
+          max="12"
+        />
+        <button
+          type="button"
+          onclick="drawPizzas(document.getElementById('numParts').value)"
+        >
+          Dibujar
+        </button>
+      </form>
+    </div>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"
+      integrity="sha512-3RlxD1bW34eFKPwj9gUXEWtdSMC59QqIqHnD8O/NoTwSJhgxRizdcFVQhUMFyTp5RwLTDL0Lbcqtl8b7bFAzog=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script>
+      function drawPizzas(numParts) {
+        clear();
+        if (numParts > 1) {
+          drawPizzaPuntoPendiente(numParts, width / 4, height / 2, 50);
+          drawPizzaDDA(numParts, width / 2, height / 2, 50);
+          drawPizzaBresenham(numParts, width / 1.3, height / 2, 50);
+        } else {
+          drawPizzaPuntoPendiente(0, width / 4, height / 2, 50);
+          drawPizzaDDA(0, width / 2, height / 2, 50);
+          drawPizzaBresenham(0, width / 1.3, height / 2, 50);
+        }
+      }
+      function setup() {
+        createCanvas(windowWidth, windowHeight);
+      }
+
+      function draw() {
+        // midPointCircle(width/1.3, height/2, 50);
+        //
+      }
+
+      function midPointCircle(xCenter, yCenter, radius) {
+        let x = radius;
+        let y = 0;
+        let decisionOver2 = 1 - x;
+
+        while (y <= x) {
+          point(x + xCenter, y + yCenter);
+          point(y + xCenter, x + yCenter);
+          point(-x + xCenter, y + yCenter);
+          point(-y + xCenter, x + yCenter);
+          point(-x + xCenter, -y + yCenter);
+          point(-y + xCenter, -x + yCenter);
+          point(x + xCenter, -y + yCenter);
+          point(y + xCenter, -x + yCenter);
+
+          y++;
+
+          if (decisionOver2 <= 0) {
+            decisionOver2 += 2 * y + 1;
+          } else {
+            x--;
+            decisionOver2 += 2 * (y - x) + 1;
+          }
+        }
+      }
+
+      function drawPizzaPuntoPendiente(numParts, centerX, centerY, radius) {
+        const anglePerSlice = (2 * Math.PI) / numParts;
+
+        for (let i = 0; i < numParts; i++) {
+          const startAngle = i * anglePerSlice;
+          const endAngle = (i + 1) * anglePerSlice;
+
+          const startX = centerX + radius * Math.cos(startAngle);
+          const startY = centerY + radius * Math.sin(startAngle);
+          const endX = centerX + radius * Math.cos(endAngle);
+          const endY = centerY + radius * Math.sin(endAngle);
+
+          line(centerX, centerY, startX, startY);
+          line(centerX, centerY, endX, endY);
+        }
+
+        midPointCircle(centerX, centerY, radius);
+      }
+
+      function drawPizzaDDA(numParts, centerX, centerY, radius) {
+        // calculamos el angulo de cada rebanada
+        const angle = (2 * PI) / numParts;
+
+        // dibujamos con algoritmo DDA
+        for (let i = 0; i < numParts; i++) {
+          const x1 = centerX;
+          const y1 = centerY;
+          const x2 = centerX + radius * cos(angle * i);
+          const y2 = centerY + radius * sin(angle * i);
+          drawLineDDA(x1, y1, x2, y2);
+        }
+        midPointCircle(centerX, centerY, radius);
+      }
+      function drawLineDDA(x1, y1, x2, y2) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const steps = Math.max(Math.abs(dx), Math.abs(dy));
+        const xIncrement = dx / steps;
+        const yIncrement = dy / steps;
+        let x = x1;
+        let y = y1;
+
+        for (let i = 0; i < steps; i++) {
+          point(Math.round(x), Math.round(y));
+          x += xIncrement;
+          y += yIncrement;
+        }
+      }
+
+      function drawPizzaBresenham(numParts, centerX, centerY, radius) {
+        // diujar la pizza con el algoritmo de punto medio
+        midPointCircle(centerX, centerY, radius);
+
+        for (let i = 0; i < numParts; i++) {
+          const angle1 = (i * TWO_PI) / numParts;
+          const angle2 = ((i + 1) * TWO_PI) / numParts;
+
+          let x1 = round(centerX + radius * cos(angle1));
+          let y1 = round(centerY + radius * sin(angle1));
+          let x2 = round(centerX + radius * cos(angle2));
+          let y2 = round(centerY + radius * sin(angle2));
+
+          let dx = abs(x2 - x1);
+          let dy = abs(y2 - y1);
+          let sx = x1 < x2 ? 1 : -1;
+          let sy = y1 < y2 ? 1 : -1;
+          let err = dx - dy;
+
+          // dibujar la linea cruzada
+          line(centerX, centerY, x1, y1);
+        }
+      }
+    </script>
+  </body>
+</html>
